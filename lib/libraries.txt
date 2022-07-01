@@ -1,0 +1,5 @@
+aiogramm
+pillow
+pandas
+vk
+vk_api
