@@ -15,4 +15,7 @@ When the message passed all this exams bot send post to database and then BotTG 
 - Bot based on AioGram. Checking new messages from user, if message have mark #Poster send it to Telegram channel and send message to Vk 
 (check function __send_photo_to_vk__ in _[BotTG](../main/BotTG.py)_). To download photo to message first of all bot needs to upload it to VK server ( also in __send_photo_to_vk__) 
 #### [VK groups parser](../main/parsing_groups.py)
-- Based on VK. To parse groups in VK you need to register application. 
+- Based on VK. To parse groups in VK you need to _[register application](https://vk.com/editapp?act=create)_. Then to parse group you need to get __domain__ and __group_id__. This two arguments parser gets from _[BotTG](../main/BotTG.py)_ (check function __process_link_to_group()__ and __process_link_to_photo()__)
+
+Hosting on Local computer (old notebook with linux elementary OS on it). 
+Takes about 500 mb of RAM. 
