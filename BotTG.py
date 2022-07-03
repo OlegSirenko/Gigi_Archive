@@ -8,7 +8,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
-
+admins = [540929323,]
 
 def send_photo_to_vk(caption, source=None, group_id=None):
     import vk_api
@@ -21,7 +21,7 @@ def send_photo_to_vk(caption, source=None, group_id=None):
     photo_id = photo[0]['id']
     access_key = photo[0]['access_key']
     attachment = f'photo{owner_id}_{photo_id}_{access_key}'
-    vk_with_api.messages.send(chat_id=2, message=caption, random_id=get_random_id(), attachment=attachment)
+    vk_with_api.messages.send(chat_id=4, message=caption, random_id=get_random_id(), attachment=attachment)
 
 
 async def give_new_poster(loop):
@@ -38,12 +38,16 @@ async def give_new_poster(loop):
             file.writelines("")
             file.close()
         groups = db.get_groups()
-        print(groups)   
+        #print(groups)   
         if groups:
             for group in groups:
                 if group[5] == False and group[4]:
-                    print(group)
-                    await bot.send_photo(chat_id=-1001772576895, caption=group[3], photo=types.InputFile("/home/tehnokrat/PythonProjects/Posters/poster_from_group.jpg") )
+                    #print(group)
+                    if len(str(group[3])) > 1024:
+                        await bot.send_message(chat_id=-1001772576895, text=group[3])
+                        await bot.send_photo(chat_id=-1001772576895, photo=types.InputFile("/home/tehnokrat/PythonProjects/Posters/poster_from_group.jpg")) 
+                    else:
+                        await bot.send_photo(chat_id=-1001772576895, caption=group[3], photo=types.InputFile("/home/tehnokrat/PythonProjects/Posters/poster_from_group.jpg") )
                     db.set_group(group_id=group[0], domain=group[1], last_post_id=group[2], post_text=group[3], photo_attachments_url=group[4], is_published=True)
         await asyncio.sleep(3)
 
@@ -57,12 +61,15 @@ async def main():
     class Form(StatesGroup):
         link_to_group = State()
         link_to_photo = State()
+        send_to_moderation = State()
 
     @dp.message_handler(commands=['add_my_vk_group'])
     async def add_band(message: types.Message):
-        await Form.link_to_group.set()
-
-        await message.answer('Снова привет, укажите краткую ссылку группы вк')
+        if message.chat.id in admins:
+            await Form.link_to_group.set()
+            await message.answer('Снова привет, укажите краткую ссылку группы вк')
+        else:
+            await message.answer('Прости, но мы решили отключить эту функцию для всех. Чтобы пользовавться этой функцией напиши @tehnokratgod')
 
     @dp.message_handler(commands=['start'], state="*")
     async def start(message: types.Message):
@@ -85,11 +92,31 @@ async def main():
     @dp.message_handler(content_types=[types.ContentType.PHOTO])
     async def new_poster(message):
         if "#афиша" in str(message.caption):
-            print(message.caption)
+            print(message)
+            print("send_to_moderation")
+            keyboard = types.InlineKeyboardMarkup(one_time_keyboard=True, row_width=1, resize_keyboard=True)
+            button_OK = types.InlineKeyboardButton(text="OK", callback_data="OK")
+            button_NOT_OK = types.InlineKeyboardButton(text="Not OK", callback_data=f"NOT/{message.chat.id}")
+            keyboard.add(button_OK) 
+            keyboard.add(button_NOT_OK)
+            frw_message = await bot.forward_message(chat_id=540929323, from_chat_id=message.chat.id, message_id=message.message_id)
+            await frw_message.reply(f"Оцените последнее от @{message.chat.username} (id: {message.chat.id}):", reply_markup=keyboard)
+
+    @dp.callback_query_handler()
+    async def inline_query(inline: types.InlineQuery):
+        if inline.data == "OK":
+            print(inline.message.message_id)
+            message = await bot.forward_message(chat_id=-1001772576895, from_chat_id=inline.message.chat.id, message_id=int(inline.message.message_id - 1))
             await message.photo[-1].download("/home/tehnokrat/PythonProjects/Posters/poster_TG.jpg")
+            callback = " OK"
             send_photo_to_vk(message.caption)
-            await bot.send_photo(chat_id=-1001772576895, caption=message.caption,
-                                 photo=types.InputFile("/home/tehnokrat/PythonProjects/Posters/poster_TG.jpg"))
+        else:
+            chat_id = str(inline.data).split("/")[1]
+            callback = " NOT OK"
+            await bot.send_message(chat_id=chat_id, text="Ваша заявка была отклонена. Не злоупотребляйте этой функцией.")
+        await inline.answer()
+        await bot.edit_message_reply_markup(chat_id=inline.from_user.id, message_id=inline.message.message_id, reply_markup=None)
+        await bot.edit_message_text(chat_id=inline.from_user.id, message_id=inline.message.message_id,text=str(inline.message.text)+callback)
 
     @dp.message_handler(commands='cancel', state='*')
     @dp.message_handler(Text(equals=['cancel', 'отмена'], ignore_case=True), state="*")
@@ -117,7 +144,7 @@ async def main():
             data['link_to_photo'] = message.text
 
         link = str(data['link_to_group']).split('com/')[1]
-        id_group = int(str(data['link_to_photo']).split('=photo')[1][0:9])
+        id_group = int(str(data['link_to_photo']).split('=photo')[1].split('_')[0])
 
         if db.get_groups(group_id=id_group):
             await message.answer(f"Кто-то уже добавил эту группу. Как только в {md.bold(link)} появятся новые записи,"
@@ -143,7 +170,7 @@ async def main():
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
-    token = "5470835719:AAGWgMPyGV2ytl_w72FkvTfMqk3Zl_z2kJE"
+    token = "token"
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(name)s - %(message)s")
     logger.info("Starting bot")
