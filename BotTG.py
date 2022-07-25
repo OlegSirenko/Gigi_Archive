@@ -41,13 +41,14 @@ async def give_new_poster(loop):
         #print(groups)   
         if groups:
             for group in groups:
-                if group[5] == False and group[4]:
-                    #print(group)
+                if group[5] == False and group[3]:
+                    print(group)
+                    input_file = types.InputFile(("/home/tehnokrat/PythonProjects/Posters/poster_from_group.jpg" if group[4] else '/home/tehnokrat/Pictures/Easter_EGG.png'))
                     if len(str(group[3])) > 1024:
                         await bot.send_message(chat_id=-1001772576895, text=group[3])
-                        await bot.send_photo(chat_id=-1001772576895, photo=types.InputFile("/home/tehnokrat/PythonProjects/Posters/poster_from_group.jpg")) 
+                        await bot.send_photo(chat_id=-1001772576895, photo=input_file) 
                     else:
-                        await bot.send_photo(chat_id=-1001772576895, caption=group[3], photo=types.InputFile("/home/tehnokrat/PythonProjects/Posters/poster_from_group.jpg") )
+                        await bot.send_photo(chat_id=-1001772576895, caption=group[3], photo=input_file)
                     db.set_group(group_id=group[0], domain=group[1], last_post_id=group[2], post_text=group[3], photo_attachments_url=group[4], is_published=True)
         await asyncio.sleep(3)
 
@@ -110,6 +111,7 @@ async def main():
             await message.photo[-1].download("/home/tehnokrat/PythonProjects/Posters/poster_TG.jpg")
             callback = " OK"
             send_photo_to_vk(message.caption)
+            db.set_poster("TG", picture_url=str(message.photo[-1]), text=message.caption)
         else:
             chat_id = str(inline.data).split("/")[1]
             callback = " NOT OK"
@@ -144,7 +146,7 @@ async def main():
             data['link_to_photo'] = message.text
 
         link = str(data['link_to_group']).split('com/')[1]
-        id_group = int(str(data['link_to_photo']).split('=photo')[1].split('_')[0])
+        id_group = int(str(data['link_to_photo']).split('photo')[1].split('_')[0])
 
         if db.get_groups(group_id=id_group):
             await message.answer(f"Кто-то уже добавил эту группу. Как только в {md.bold(link)} появятся новые записи,"
@@ -170,7 +172,7 @@ async def main():
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
-    token = "token"
+    token = "5470835719:AAGWgMPyGV2ytl_w72FkvTfMqk3Zl_z2kJE"
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(name)s - %(message)s")
     logger.info("Starting bot")
