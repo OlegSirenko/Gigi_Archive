@@ -4,7 +4,7 @@ from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from vk_api.utils import get_random_id
 import requests
 
-token = 'token'
+token = 'vk1.a.QGbRpK0NKY7hOKlf9P4sCDpjKHWxpa9tv6eIZA5Lnr_cjPNv2OIN0VcXSXl232zRrnzlaea6uU9a3MrfDlbnxIwQT_7CEcL23_UsDBiSaAHfRkXBkeBNz7KideSvGm_4slB8zhU_IPv2FzpIsjHI68Lp7_q-0PHTq0uXPnJPyZqQiGCcKgHTvTmcdmRbkYmn'
 vk_session = vk_api.VkApi(token=token)
 longpoll = VkBotLongPoll(vk_session, 214304663)
 vk_with_api = vk_session.get_api()
@@ -22,10 +22,10 @@ def main():
     print("Bot Started")
     for event in longpoll.listen():
         if event.type == VkBotEventType.MESSAGE_NEW:
-            if event.from_chat and event.chat_id == 4:
+            if event.from_chat and (event.chat_id == 4 or event.chat_id == 3):
                 text = event.message['text']
                 print(event.message)
-                if "#афиша" in text:
+                if "#афиша" in str(text).lower():
                     if event.message["attachments"]:
                         path = event.message["attachments"][0]
                         if path['type'] == 'wall':
