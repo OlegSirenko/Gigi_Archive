@@ -4,7 +4,7 @@ import vk
 from database_afishe import set_group, get_groups
 from BotTG import send_photo_to_vk
 
-token = ""
+token = "token"
 
 
 def download_image(url):
