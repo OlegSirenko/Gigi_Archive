@@ -172,7 +172,7 @@ async def main():
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
-    token = "5470835719:AAGWgMPyGV2ytl_w72FkvTfMqk3Zl_z2kJE"
+    token = "token"
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(name)s - %(message)s")
     logger.info("Starting bot")
